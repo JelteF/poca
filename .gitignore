@@ -12,6 +12,7 @@
 *.dylib
 
 # Executables
+poca
 *.exe
 *.out
 *.app

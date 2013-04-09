@@ -9,6 +9,6 @@ typedef struct card_t {
     int number;
 } card_t;
 
-void print_card(card_t *card);
+void print_card(card_t *card, char *append);
 
 #endif

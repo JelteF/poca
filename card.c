@@ -1,6 +1,6 @@
 #include "card.h"
 
-void print_card(card_t *card) {
+void print_card(card_t *card, char *append) {
     char *suit;
 
     switch (card->suit) {
@@ -20,6 +20,6 @@ void print_card(card_t *card) {
             break;
     }
 
-    printf("%d of %s\n", card->number, suit);
+    printf("%d of %s%s", card->number, suit, append);
 }
 

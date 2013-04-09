@@ -1,5 +1,5 @@
 PROGNAME = poca
-SRCFILES = poca.c
+SRCFILES = poca.c card.c
 RUNARGS =
 
 CC = gcc

@@ -23,3 +23,6 @@ void print_card(card_t *card, char *append) {
     printf("%d of %s%s", card->number, suit, append);
 }
 
+int same_suit(card_t *a, card_t *b) {
+    return a->suit == b->suit;
+}

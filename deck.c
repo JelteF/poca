@@ -14,4 +14,5 @@ card_t **init_deck() {
 
 card_t *take_card(card_t *card) {
     card->dealed = 1;
+    return card;
 }

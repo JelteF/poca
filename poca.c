@@ -18,6 +18,7 @@ void print_dealed_cards(dealed_cards_t *dealed_cards) {
 
     printf("Opponents hand: ");
     print_hand(dealed_cards->op_hand);
+    printf("\n");
 }
 
 /*
@@ -61,7 +62,6 @@ win_loss_t deal_flop(dealed_cards_t *dc, card_t **deck) {
         win_loss_t second_wl = {0};
 
         dc->table[0] = take_card(deck[i]);
-
         // When the first card is the same suit as one of the cards in hand,
         // both other cards get the max and multi of the one before them
         if (same_suit(dc->my_hand[1], deck[i]) ||
@@ -71,8 +71,14 @@ win_loss_t deal_flop(dealed_cards_t *dc, card_t **deck) {
             multi_third = multi_second;
             multi_second = multi_first;
         }
+        else {
+            max_second = min(max_first + 13, 52);
+            max_third = min(max_second + 13, 52);
+            multi_second = 4 - max_second/13;
+            multi_third = 4 - max_third/13;
+        }
 
-        for (int j = i; j < max_second; j++) {
+        for (int j = i + 1; j < max_second; j++) {
             win_loss_t third_wl = {0};
 
             // skip similar combinations
@@ -81,8 +87,20 @@ win_loss_t deal_flop(dealed_cards_t *dc, card_t **deck) {
             }
 
             dc->table[1] = take_card(deck[j]);
+            if (same_suit(dc->my_hand[1], deck[j]) ||
+                        same_suit(dc->my_hand[0], deck[j]) ||
+                        same_suit(deck[i], deck[j])) {
+                max_third = max_second;
+                multi_third = multi_second;
+            }
+            else {
+                max_third = min(max_second + 13, 52);
+                multi_third = 4 - max_third/13;
+            }
 
-            for (int k = j; k < max_third; k++) {
+
+
+            for (int k = j + 1; k < max_third; k++) {
                 win_loss_t turn_wl;
 
                 if (k == max_second) {
@@ -128,6 +146,7 @@ int deal_my_hand(dealed_cards_t *dc, card_t **deck) {
 
             dc->my_hand[1] = take_card(deck[j]);
 
+
             flop_wl = deal_flop(dc, deck);
 
             merge_wl(&full_wl[i], &flop_wl, 1, 0);
@@ -137,19 +156,20 @@ int deal_my_hand(dealed_cards_t *dc, card_t **deck) {
 
 
 void start_game(card_t **deck) {
-    dealed_cards_t *dealed_cards = calloc(1, sizeof(dealed_cards_t));
+    dealed_cards_t *dc = calloc(1, sizeof(dealed_cards_t));
 
-    dealed_cards->my_hand[0] = deck[35];
-    dealed_cards->my_hand[1] = deck[36];
-    dealed_cards->table[0] = deck[30];
-    dealed_cards->table[1] = deck[29];
-    dealed_cards->table[2] = deck[28];
-    dealed_cards->table[3] = deck[26];
-    dealed_cards->table[4] = deck[25];
-    dealed_cards->op_hand[0] = deck[13];
-    dealed_cards->op_hand[1] = deck[12];
+    dc->my_hand[0] = deck[35];
+    dc->my_hand[1] = deck[36];
+    dc->table[0] = deck[30];
+    dc->table[1] = deck[29];
+    dc->table[2] = deck[28];
+    dc->table[3] = deck[26];
+    dc->table[4] = deck[25];
+    dc->op_hand[0] = deck[13];
+    dc->op_hand[1] = deck[12];
 
-    print_dealed_cards(dealed_cards);
+    print_dealed_cards(dc);
+    deal_my_hand(dc, deck);
 }
 
 

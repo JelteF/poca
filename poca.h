@@ -15,3 +15,13 @@ typedef struct win_loss_t {
     long wins;
     long losses;
 } win_loss_t;
+
+#define min(a,b) \
+    ({ __typeof__ (a) _a = (a); \
+     __typeof__ (b) _b = (b); \
+     _a < _b ? _a : _b; })
+
+#define max(a,b) \
+    ({ __typeof__ (a) _a = (a); \
+     __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })

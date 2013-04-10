@@ -6,18 +6,18 @@ void print_hand(card_t **hand) {
 }
 
 
-void print_dealed_cards(dealt_cards_t *dealed_cards) {
+void print_dealt_cards(dealt_cards_t *dc) {
     printf("Your hand: ");
-    print_hand(dealed_cards->my_hand);
+    print_hand(dc->my_hand);
 
     printf("The table: ");
     for (int i = 0; i < 4; i++) {
-        print_card(dealed_cards->table[i], ", ");
+        print_card(dc->table[i], ", ");
     }
-    print_card(dealed_cards->table[4], "\n");
+    print_card(dc->table[4], "\n");
 
     printf("Opponents hand: ");
-    print_hand(dealed_cards->op_hand);
+    print_hand(dc->op_hand);
     printf("\n");
 }
 
@@ -35,25 +35,58 @@ void merge_wl(win_loss_t *dest, win_loss_t *src, int multi, int i) {
     dest->losses += src->losses * multi;
 }
 
+win_loss_t deal_oponent(dealt_cards_t *dc, card_t **deck) {
+    win_loss_t op_wl = {0};
+    int max_first = 52;
+    int multi_first = 1;
+    int max_second = 52;
+    int multi_second = 1;
+
+    for (int i = 0; i < max_first; i++) {
+        win_loss_t second_wl = {0};
+        if (!dc->op_hand[0]) continue;
+
+        for (int j = 0; j < max_first; j++) {
+            int winner;
+
+            dc->op_hand[1] = take_card(deck[j]);
+            if (!dc->op_hand[1]) continue;
+
+            winner = evaluate_dealt_cards(dc);
+
+            if (winner == 1) {
+                second_wl.wins += multi_second;
+            }
+            else if (winner == 2) {
+                second_wl.losses += multi_second;
+            }
+            put_card_back(dc->op_hand[1]);
+        }
+
+        merge_wl(&op_wl, &second_wl, multi_first, i);
+        put_card_back(dc->op_hand[0]);
+    }
+
+    return op_wl;
+}
+
+
 win_loss_t deal_river(dealt_cards_t *dc, card_t **deck) {
     win_loss_t river_wl = {0};
     int max_river = 52;
     int multi_river = 1;
 
     for (int i = 0; i < max_river; i++) {
-        int winner;
+        win_loss_t op_wl;
 
         dc->table[4] = take_card(deck[i]);
         if (!dc->table[4]) continue;
 
-        winner = evaluate_dealt_cards(dc);
+        op_wl = deal_oponent(dc, deck);
 
-        if (winner == 1) {
-            river_wl.wins += 1;
-        }
-        else if (winner == 2) {
-            river_wl.losses += 1;
-        }
+        merge_wl(&river_wl, &op_wl, multi_river, i);
+
+        put_card_back(dc->table[4]);
     }
     return river_wl;
 }
@@ -72,6 +105,7 @@ win_loss_t deal_turn(dealt_cards_t *dc, card_t **deck) {
         river_wl = deal_river(dc, deck);
 
         merge_wl(&turn_wl, &river_wl, multi_turn, i);
+        put_card_back(dc->table[3]);
     }
     return turn_wl;
 }
@@ -159,7 +193,7 @@ win_loss_t deal_flop(dealt_cards_t *dc, card_t **deck) {
             if (j == 25) {
                 //printf("%d, %d, %d\n", max_first, max_second, max_third);
                 printf("%d, %d, %d\n", multi_first, multi_second, multi_third);
-                print_dealed_cards(dc);
+                print_dealt_cards(dc);
             }
             merge_wl(&second_wl, &third_wl, max_second, j);
 
@@ -225,7 +259,7 @@ void start_game(card_t **deck) {
     dc->op_hand[0] = deck[13];
     dc->op_hand[1] = deck[12];
 
-    print_dealed_cards(dc);
+    print_dealt_cards(dc);
     deal_my_hand(dc, deck);
 }
 

@@ -13,6 +13,8 @@ typedef struct dealt_cards_t {
     card_t *op_hand[2];
 } dealt_cards_t;
 
+void print_dealt_cards(dealt_cards_t *dc);
+
 #include "evaluate.h"
 
 
@@ -20,6 +22,7 @@ typedef struct win_loss_t {
     long wins;
     long losses;
 } win_loss_t;
+
 
 #define min(a,b) \
     ({ __typeof__ (a) _a = (a); \

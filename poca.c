@@ -6,7 +6,7 @@ void print_hand(card_t **hand) {
 }
 
 
-void print_dealed_cards(dealed_cards_t *dealed_cards) {
+void print_dealed_cards(dealt_cards_t *dealed_cards) {
     printf("Your hand: ");
     print_hand(dealed_cards->my_hand);
 
@@ -27,7 +27,7 @@ void print_dealed_cards(dealed_cards_t *dealed_cards) {
  */
 void merge_wl(win_loss_t *dest, win_loss_t *src, int multi, int i) {
     // check if it should be multiplied
-    if (multi > 1 && i < 52 - 13 * multi) {
+    if (multi > 1 && i > 52 - 13 * multi) {
         multi = 1;
     }
 
@@ -35,12 +35,48 @@ void merge_wl(win_loss_t *dest, win_loss_t *src, int multi, int i) {
     dest->losses += src->losses * multi;
 }
 
-win_loss_t deal_turn(dealed_cards_t *dc, card_t **deck) {
+win_loss_t deal_river(dealt_cards_t *dc, card_t **deck) {
+    win_loss_t river_wl = {0};
+    int max_river = 52;
+    int multi_river = 1;
+
+    for (int i = 0; i < max_river; i++) {
+        int winner;
+
+        dc->table[4] = take_card(deck[i]);
+        if (!dc->table[4]) continue;
+
+        winner = evaluate_dealt_cards(dc);
+
+        if (winner == 1) {
+            river_wl.wins += 1;
+        }
+        else if (winner == 2) {
+            river_wl.losses += 1;
+        }
+    }
+    return river_wl;
+}
+
+win_loss_t deal_turn(dealt_cards_t *dc, card_t **deck) {
     win_loss_t turn_wl = {0};
+    int max_turn = 52;
+    int multi_turn = 1;
+
+    for (int i = 0; i < max_turn; i++) {
+        win_loss_t river_wl;
+
+        dc->table[3] = take_card(deck[i]);
+        if (!dc->table[3]) continue;
+
+        river_wl = deal_river(dc, deck);
+
+        merge_wl(&turn_wl, &river_wl, multi_turn, i);
+    }
     return turn_wl;
 }
 
-win_loss_t deal_flop(dealed_cards_t *dc, card_t **deck) {
+win_loss_t deal_flop(dealt_cards_t *dc, card_t **deck) {
     win_loss_t flop_wl = {0};
     int max_first = 39;
     int max_second = 52;
@@ -144,7 +180,7 @@ win_loss_t deal_flop(dealed_cards_t *dc, card_t **deck) {
  * Order also doesn't matter, we make sure the second card is never a lower
  * card than the first.
  */
-int deal_my_hand(dealed_cards_t *dc, card_t **deck) {
+int deal_my_hand(dealt_cards_t *dc, card_t **deck) {
     win_loss_t full_wl[13];
 
     for (int i = 0; i < 13; i++) {
@@ -177,7 +213,7 @@ int deal_my_hand(dealed_cards_t *dc, card_t **deck) {
 
 
 void start_game(card_t **deck) {
-    dealed_cards_t *dc = calloc(1, sizeof(dealed_cards_t));
+    dealt_cards_t *dc = calloc(1, sizeof(dealt_cards_t));
 
     dc->my_hand[0] = deck[35];
     dc->my_hand[1] = deck[36];

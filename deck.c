@@ -13,6 +13,13 @@ card_t **init_deck() {
 }
 
 card_t *take_card(card_t *card) {
+    if (card->dealed) {
+        return NULL;
+    }
     card->dealed = 1;
     return card;
+}
+
+void put_card_back(card_t *card) {
+    card->dealed = 0;
 }

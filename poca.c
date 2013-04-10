@@ -62,6 +62,8 @@ win_loss_t deal_flop(dealed_cards_t *dc, card_t **deck) {
         win_loss_t second_wl = {0};
 
         dc->table[0] = take_card(deck[i]);
+        if (!dc->table[0]) continue;
+
         // When the first card is the same suit as one of the cards in hand,
         // both other cards get the max and multi of the one before them
         if (same_suit(dc->my_hand[1], deck[i]) ||
@@ -87,6 +89,8 @@ win_loss_t deal_flop(dealed_cards_t *dc, card_t **deck) {
             }
 
             dc->table[1] = take_card(deck[j]);
+            if (!dc->table[1]) continue;
+
             if (same_suit(dc->my_hand[1], deck[j]) ||
                         same_suit(dc->my_hand[0], deck[j]) ||
                         same_suit(deck[i], deck[j])) {
@@ -107,17 +111,28 @@ win_loss_t deal_flop(dealed_cards_t *dc, card_t **deck) {
                     k += j % 13;
                 }
                 dc->table[2] = take_card(deck[k]);
+                if (!dc->table[2]) continue;
 
                 turn_wl = deal_turn(dc, deck);
 
                 merge_wl(&third_wl, &turn_wl, max_third, k);
+
+                put_card_back(dc->table[2]);
             }
 
+            if (j == 25) {
+                //printf("%d, %d, %d\n", max_first, max_second, max_third);
+                printf("%d, %d, %d\n", multi_first, multi_second, multi_third);
+                print_dealed_cards(dc);
+            }
             merge_wl(&second_wl, &third_wl, max_second, j);
+
+            put_card_back(dc->table[1]);
 
         }
 
         merge_wl(&flop_wl, &second_wl, max_first, i);
+        put_card_back(dc->table[0]);
     }
 
     return flop_wl;
@@ -135,6 +150,7 @@ int deal_my_hand(dealed_cards_t *dc, card_t **deck) {
     for (int i = 0; i < 13; i++) {
 
         dc->my_hand[0] = take_card(deck[i]);
+        if (!dc->my_hand[0]) continue;
 
         for (int j = i + 1; j < 26; j++) {
             win_loss_t flop_wl;
@@ -145,12 +161,17 @@ int deal_my_hand(dealed_cards_t *dc, card_t **deck) {
             }
 
             dc->my_hand[1] = take_card(deck[j]);
+            if (!dc->my_hand[1]) continue;
 
 
             flop_wl = deal_flop(dc, deck);
 
             merge_wl(&full_wl[i], &flop_wl, 1, 0);
+
+            put_card_back(dc->my_hand[1]);
         }
+
+        put_card_back(dc->my_hand[0]);
     }
 }
 
